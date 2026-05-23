@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUOES ACADEMY: SECRET ARCHIVE SYSTEM</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Ravenwood + 판타지 파피루스 테마 믹스 */
+            --bg-outer: #1a1511; 
+            --bg-paper: #ecdcb0; 
+            --bg-paper-dark: #d5c393;
+            --text-ink: #2b1d0e;
+            --text-light: #ecdcb0;
+            --accent-gold: #8b4513;
+            --accent-red: #800000;
+            --border-heavy: 4px double #8b4513;
+            --border-light: 1px solid #a0522d;
+            --bg-panel: rgba(0, 0, 0, 0.05); 
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body { 
+            /* 기존 배경 설정 주석 처리 */
+            /* background-color: var(--bg-outer); */
+            /* background-image: url('https://www.transparenttextures.com/patterns/black-scales.png'); */
+            color: var(--text-light); 
+            font-family: 'Gowun Dodum', sans-serif; 
+            line-height: 1.6; 
+            padding: 20px;
+            /* 판타지 배경 가상 요소를 위한 설정 */
+            position: relative;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 뒷배경 판타지 스타일 블러 처리 추가 */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            /* 요청하신 강의실 이미지로 변경 */
+            background-image: url('https://raw.githubusercontent.com/micot1/RPK16/refs/heads/main/51BBG.jpg');
+            background-size: cover;
+            background-position: center;
+            /* 블러 처리 및 어둡게 조정 */
+            filter: blur(8px) brightness(0.5);
+            z-index: -1;
+            /* 블러로 인한 가장자리 흐림 보정 */
+            transform: scale(1.05);
+        }
+
+        .system-app {
+            max-width: 1200px; margin: 0 auto;
+            /* 배경을 대리석 톤 이미지로 변경 */
+            background: url('https://www.transparenttextures.com/patterns/cream-pixels.png'), var(--bg-paper);
+            color: var(--text-ink); border: var(--border-heavy); box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            position: relative;
+        }
+
+        .sys-header {
+            display: flex; justify-content: center; align-items: center;
+            background: var(--bg-outer); color: var(--text-light);
+            padding: 20px 30px; border-bottom: 3px solid var(--accent-gold);
+        }
+        .sys-title { font-family: 'Cinzel', serif; font-size: 1.8rem; color: var(--accent-gold); font-weight: bold; letter-spacing: 2px; line-height: 1.2; text-align: center; }
+        .sys-title span { font-size: 0.9rem; color: #aaa; letter-spacing: 4px; display: block; }
+
+        .sys-nav { display: flex; background: var(--bg-paper-dark); border-bottom: var(--border-heavy); border-top: 1px solid #fff; }
+        .sys-nav button {
+            flex: 1; padding: 15px; background: none; border: none; border-right: var(--border-light);
+            color: var(--text-ink); font-family: 'Cinzel', 'Gowun Dodum', sans-serif; font-size: 1.1rem;
+            font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        .sys-nav button:last-child { border-right: none; }
+        .sys-nav button:hover, .sys-nav button.active { background: var(--accent-gold); color: #fff; }
+
+        .sys-main { padding: 40px; min-height: 600px; }
+        .view-section { display: none; animation: fadeIn 0.4s ease; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .home-banner { text-align: center; margin-bottom: 40px; border-bottom: var(--border-light); padding-bottom: 20px; }
+        .home-banner h2 { font-size: 2.5rem; color: var(--accent-gold); margin-bottom: 15px; font-weight: bold; font-family: 'Cinzel', 'Gowun Dodum', sans-serif; }
+        .home-banner p { font-size: 1.15rem; max-width: 900px; margin: 0 auto; line-height: 1.8; color: var(--text-ink); }
+
+        .dept-overview { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .dept-card { background: var(--bg-panel); padding: 20px; border: var(--border-light); position: relative; box-shadow: 5px 5px 15px rgba(0,0,0,0.1); }
+        .dept-card::before { content: ''; position: absolute; top: 0; left: 0; width: 6px; height: 100%; }
+        .dept-winter::before { background: var(--accent-blue); }
+        .dept-solaris::before { background: var(--accent-red); }
+        .dept-tempest::before { background: var(--accent-yellow); }
+        .dept-yggdrasil::before { background: var(--accent-green); }
+        .dept-card h3 { color: var(--accent-red); font-size: 1.4rem; margin-bottom: 10px; border-bottom: 1px dashed var(--accent-gold); padding-bottom: 5px; font-family: 'Cinzel', 'Gowun Dodum', sans-serif; font-weight: bold; }
+        .dept-card p { font-size: 1.05rem; color: var(--text-ink); line-height: 1.8; }
+
+        /* 배경색을 부모 요소와 통일시키기 위해 transparent로 변경 */
+        #home.view-section { background-color: transparent; color: var(--text-ink); padding-bottom: 50px; }
+        #home .container { background: rgba(255, 255, 255, 0.2); border: var(--border-light); }
+        #home h2, #home h3 { color: var(--accent-gold); font-weight: bold; }
+        #home p { color: var(--text-ink); }
+
+        .character-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 30px; }
+        .char-item { display: flex; background: var(--bg-panel); border: 2px solid var(--accent-gold); border-radius: 12px; overflow: hidden; cursor: pointer; transition: 0.3s; box-shadow: 5px 5px 15px rgba(0,0,0,0.2); }
+        .char-item:hover { background: var(--bg-paper-dark); box-shadow: 3px 3px 10px rgba(0,0,0,0.1); transform: translateY(-3px); }
+        .char-item img { width: 160px; height: 100%; min-height: 200px; object-fit: cover; background: #000; border-right: 1px solid var(--border-line); }
+        .char-info-short { padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .char-info-short h4 { font-size: 1.5rem; color: var(--accent-gold); margin-bottom: 8px; font-weight: bold; font-family: 'Cinzel', 'Gowun Dodum', sans-serif; }
+        .char-info-short .char-meta { color: var(--accent-red); font-size: 0.95rem; margin-bottom: 10px; font-weight: bold; }
+        .char-info-short p { font-size: 0.95rem; color: var(--text-ink); line-height: 1.6; }
+
+        /* 📝 모달 창 애니메이션 및 디자인 */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
+            z-index: 1000; display: none; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.3s ease; /* 페이드 인/아웃 효과 추가 */
+        }
+        .modal-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .dossier-window {
+            width: 900px; max-width: 95%; height: 85vh; position: relative;
+            background: url('https://www.transparenttextures.com/patterns/cream-pixels.png'), var(--bg-paper);
+            border: var(--border-heavy); display: flex; flex-direction: column;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            transform: translateY(20px); transition: transform 0.3s ease; /* 슬라이드 업 효과 추가 */
+        }
+        .modal-overlay.show .dossier-window {
+            transform: translateY(0);
+        }
+
+        .d-close-absolute {
+            position: absolute; top: 15px; right: 20px; background: var(--bg-outer); border: 1px solid var(--accent-gold);
+            color: var(--accent-red); padding: 5px 15px; font-size: 1.8rem; font-weight: bold; cursor: pointer; z-index: 1001; font-family: 'Cinzel', sans-serif;
+        }
+        .d-close-absolute:hover { background: var(--accent-red); color: #fff; }
+        
+        .dossier-body { flex: 1; padding: 40px; overflow-y: auto; color: var(--text-ink); }
+
+        .merged-layout { display: flex; flex-direction: column; gap: 30px; }
+        .hero-photo { width: 100%; border: var(--border-heavy); background: #000; padding: 5px; cursor: pointer; text-align: center; }
+        .hero-photo img { max-width: 100%; max-height: 350px; object-fit: contain; display: block; margin: 0 auto; transition: 0.2s; }
+        .hero-photo img:hover { transform: scale(1.02); }
+        
+        .merged-info { display: flex; flex-direction: column; }
+        .badge-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .badge-table th, .badge-table td { padding: 12px; border: var(--border-light); text-align: left; }
+        .badge-table th { background: rgba(139,69,19,0.1); width: 30%; color: var(--accent-red); font-weight: bold; }
+        .quote-box { padding: 20px; background: rgba(255,255,255,0.4); border-left: 5px solid var(--accent-gold); font-style: italic; font-weight: bold; }
+        
+        .report-section { margin-bottom: 30px; }
+        .report-section h3 { color: var(--accent-red); font-size: 1.4rem; font-weight: bold; border-bottom: 1px dashed var(--accent-gold); margin-bottom: 15px; padding-bottom: 5px; }
+        .report-section p { font-size: 1.1rem; line-height: 1.8; text-align: justify; }
+
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; }
+        .gallery-item img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border: var(--border-light); cursor: pointer; transition: 0.2s; }
+        .gallery-item img:hover { transform: scale(1.05); border-color: var(--accent-gold); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+
+        .place-list { display: flex; flex-direction: column; gap: 40px; }
+        .place-card { background: rgba(255,255,255,0.3); border: var(--border-light); padding: 30px; box-shadow: 5px 5px 0px var(--border-line); }
+        .place-header { display: flex; gap: 30px; margin-bottom: 25px; }
+        .place-img { width: 180px; height: 180px; border: var(--border-heavy); object-fit: cover; }
+        .place-text h3 { font-size: 2rem; color: var(--accent-red); margin-bottom: 15px; font-weight: bold; font-family: 'Cinzel', 'Gowun Dodum', sans-serif; }
+        .place-text p { font-size: 1.15rem; line-height: 1.8; }
+        
+        .monster-box { background: rgba(139,69,19,0.05); padding: 20px; border-top: 1px dashed var(--accent-gold); }
+        .monster-box h4 { color: var(--accent-gold); margin-bottom: 15px; font-weight: bold; font-family: 'Cinzel', 'Gowun Dodum', sans-serif; }
+        .m-tag-grid { display: flex; flex-wrap: wrap; gap: 15px; }
+        .m-tag { display: flex; align-items: center; gap: 10px; background: var(--bg-paper-dark); padding: 8px 15px 8px 8px; border: var(--border-light); cursor: pointer; transition: 0.2s; border-radius: 30px; }
+        .m-tag:hover { background: var(--accent-gold); color: #fff; }
+        .m-tag img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid #fff; }
+
+        .monster-badge-layout { display: flex; gap: 40px; }
+        .monster-badge-photo { flex: 0 0 300px; border: var(--border-heavy); background: #000; padding: 5px; }
+        .monster-badge-photo img { width: 100%; display: block; }
+        .monster-badge-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+        #img-lightbox { display: none; position: fixed; z-index: 10001; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; }
+        #img-lightbox.show { display: flex; opacity: 1; }
+        #img-lightbox img { max-width: 90%; max-height: 90vh; border: var(--border-heavy); transform: scale(0.8); transition: transform 0.3s ease; }
+        #img-lightbox.show img { transform: scale(1); }
+
+    </style>
+</head>
+<body>
+
+<div class="system-app">
+    <header class="sys-header">
+        <div class="sys-title">
+            LUOES ACADEMY
+            <span>STUDENT INFORMATION SYSTEM</span>
+        </div>
+    </header>
+
+    <nav class="sys-nav">
+        <button class="nav-btn active" onclick="switchView('home')">MAIN MENU</button>
+        <button class="nav-btn" onclick="showDepartment('윈터스코프')">BLOCK W : WINTERSCOPE</button>
+        <button class="nav-btn" onclick="showDepartment('솔라리스')">BLOCK S : SOLARIS</button>
+        <button class="nav-btn" onclick="showDepartment('템페스트')">BLOCK T : TEMPEST</button>
+        <button class="nav-btn" onclick="showDepartment('위그드라실')">BLOCK Y : YGGDRASIL</button>
+        <button class="nav-btn" onclick="switchView('places-view')">REPORT : LOCATIONS & BESTIARY</button>
+    </nav>
+
+    <main class="sys-main">
+        
+        <div id="home" class="view-section active">
+            <div class="home-banner">
+                <h2 style="font-weight: bold;">입학을 환영합니다, 예비 마도사 여러분!</h2>
+                <p>치열한 경쟁을 뚫고 마침내 대륙 최고의 마법 기관, <strong>루어스 아카데미</strong>에 당도하신 것을 환영합니다! 이곳에 존재하는 네 개의 학과가 여러분 안에 잠든 무한한 마력을 일깨워 줄 것입니다. 상단의 메뉴를 클릭하여 각 학과에 소속된 인물들의 상세한 학생 기록부를 확인하고, 아카데미 내의 위험 요소를 미리 파악하십시오. 무사히 살아서 졸업식 때 볼 수 있기를 기원하죠!</p>
+            </div>
+            
+            <div class="dept-overview">
+                <div class="dept-card">
+                    <h3>❄️ 윈터스코프 (Winterscope)</h3>
+                    <p>물과 얼음의 본질을 탐구합니다. 냉철한 이성을 유지하며 마력을 정교한 형태로 응축시키는 법을 배웁니다. 아카데미 내에서 가장 조용하지만, 가장 날카로운 힘을 지닌 학과입니다.</p>
+                </div>
+                <div class="dept-card">
+                    <h3>🔥 솔라리스 (Solaris)</h3>
+                    <p>화염과 파괴의 마법을 지향합니다. 내면의 열정을 마력으로 승화시켜 전장의 압도적인 화력을 담당합니다. 끊임없이 훈련장에 폭발음이 울리는 가장 역동적인 학과입니다.</p>
+                </div>
+                <div class="dept-card">
+                    <h3>⚡ 템페스트 (Tempest)</h3>
+                    <p>빛과 전격의 신속함을 추구합니다. 누구보다 빠른 반응 속도와 강력한 일격을 선사하는 엘리트들의 요람입니다. 번개의 탑은 항상 이들의 불꽃 튀는 마력으로 가득합니다.</p>
+                </div>
+                <div class="dept-card">
+                    <h3>🌿 위그드라실 (Yggdrasil)</h3>
+                    <p>생명과 대지의 순환을 이해합니다. 치유와 수호, 자연을 통제하는 방대한 지식을 배웁니다. 아카데미의 든든한 방패이자 모든 학과의 조화를 돕는 근원적인 학과입니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="dept-view" class="view-section">
+            <h2 id="dept-title" style="font-size: 2.2rem; font-weight: bold; color: var(--accent-gold); border-bottom: 2px solid var(--accent-gold); padding-bottom: 10px;">학과 인물</h2>
+            <div id="char-list-grid" class="char-grid"></div>
+        </div>
+
+        <div id="places-view" class="view-section">
+            <h2 style="font-size: 2.2rem; font-weight: bold; color: var(--accent-red); border-bottom: 2px solid var(--accent-red); padding-bottom: 10px; margin-bottom: 30px;">INCIDENT REPORT: LOCATIONS & BESTIARY</h2>
+            <div id="places-list-container" class="place-list"></div>
+        </div>
+
+    </main>
+</div>
+
+<div class="modal-overlay" id="charModal" onclick="closeModal('charModal', event)">
+    <div class="dossier-window">
+        <button class="d-close-absolute" onclick="closeModal('charModal')">×</button>
+        <div class="dossier-body" id="dossier-content">
+            </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="monsterModal" onclick="closeModal('monsterModal', event)">
+    <div class="dossier-window" style="height: auto; max-height: 80vh; max-width: 800px;">
+        <button class="d-close-absolute" onclick="closeModal('monsterModal')">×</button>
+        <div class="dossier-body" id="monster-content">
+            </div>
+    </div>
+</div>
+
+<div id="img-lightbox" onclick="closeLightbox(event)">
+    <img id="lb-img" src="" alt="확대">
+</div>
+
+<script>
+    // ---------------------------------------------------------
+    // 데이터베이스 완전 보존
+    // ---------------------------------------------------------
+    const charDB = {
+        '51A': { 
+            name: '레아 실비아', dept: '❄️ 윈터스코프', info: '20살 / 1학년 / 실비아 후작 영애', 
+            trait: '은발 트윈테일, 벽안. 전형적인 츤데레 성격. 완벽주의자로 아카데미 이론 시험 1등을 놓치지 않는다.', 
+            magic: '물 계열 마법', skill: '바이탈 웨이브 (Vital Wave)',
+            setting: '실비아 가문의 명예를 위해 스스로를 혹사하는 경향이 있다. 사람들과 어울리는 것이 서툴러 혼자 도서관 구석에서 마법 수식을 연구하는 모습이 자주 목격된다. 당황하면 귀 끝까지 빨개지며 말을 더듬는 습관이 있다. 연애 경험이 전무하여 작은 스킨십에도 과하게 반응한다.',
+            conflict: '후작 영애로서 기대받는 "완벽함"의 압박과, 실제로는 누군가에게 사랑받고 의지하고 싶어 하는 여린 내면 사이의 갈등.',
+            quote: '"흥, 딱히 널 위해서 도와준 건 아니니까 착각하지 마, 바보!"'
+        },
+        '51B': { 
+            name: '세실리아 미르엘', dept: '❄️ 윈터스코프', info: '138살 / 2학년 교환학생 (엘프)', 
+            trait: '금발 긴머리의 아름다운 엘프. 에메랄드빛 눈동자와 풍부한 표정을 가졌으며, 언제나 상냥한 미소를 짓는 평화주의자.', 
+            magic: '얼음 계열 마법', skill: '아이시클 스톰 (Icicle Storm)',
+            setting: '엘프 숲에서 온 교환학생으로, 인간들의 복잡한 문화와 자극적인 음식에 호기심이 매우 많다. 아카데미 내 모든 갈등을 중재하며 헌신적으로 남을 돕는다. 엘프치고는 꽤나 개방적이고 능동적인 사고방식을 가졌으며, 인간의 감정 변화를 관찰하는 것을 즐긴다.',
+            conflict: '영생에 가까운 수명을 가진 자신과, 찰나의 순간처럼 스쳐 지나가는 인간 친구들 사이에서 느껴야 하는 필연적인 이별의 예감.',
+            quote: '"제가 기꺼이 도와드릴 테니 너무 걱정하지 마세요."'
+        },
+        '51C': { 
+            name: '아델리나 로디안', dept: '❄️ 윈터스코프', info: '24살 / 4학년 / 평민 출신', 
+            trait: '베이지색 로우 트윈테일, 녹안. 친화력 MAX의 장난기 가득한 선배. 능글맞은 성격으로 후배들을 놀리는 것이 일상이다.', 
+            magic: '정령술 (물 계열)', skill: '정령 운디네 소환',
+            setting: '평민 출신이지만 뛰어난 정령 친화력을 인정받아 장학생으로 입학했다. 신분을 숨기기 위해 일부러 더 화려하고 능청스럽게 행동한다. 밤마다 아카데미의 금지된 구역을 탐험하는 취미가 있다. 겉으로는 가볍지만 속은 누구보다 깊고 털털하다.',
+            conflict: '자신의 출신이 밝혀졌을 때 친구들에게 거절당할지도 모른다는 공포와, 자신의 뿌리에 대해 느끼는 자부심 사이의 투쟁.',
+            quote: '"아하하! 후배님, 그렇게 귀여운 표정을 지으면 더 놀리고 싶어지잖아요~ 농담이에요, 농담."'
+        },
+        '51D': { 
+            name: '하이디 로웰', dept: '🔥 솔라리스', info: '21살 / 1학년 (낙제생) / 평민 출신', 
+            trait: '적발 장발에 호박색 눈동자를 가진 터프한 소녀. 이론은 꽝이지만 실전 전투 능력만큼은 학년 최고 수준인 기분파.', 
+            magic: '화염 계열 마법', skill: '플레임 버스트 (Flame Burst)',
+            setting: '거친 환경에서 자라 입이 험하고 자존심이 강하지만 속정이 깊다. 단짝인 아리스를 친동생처럼 아끼며 케어한다. 왕실 마법사가 되어 부모님을 호강시켜 드리는 것이 꿈이다. 권위적인 귀족들을 싫어하며, 정의감이 강해 괴롭힘을 당하는 학생을 보면 주먹부터 나간다.',
+            conflict: '부족한 이론적 재능을 순수한 노력과 실전으로 메우려 하지만, 가끔씩 찾아오는 보이지 않는 벽에 대한 무력감.',
+            quote: '"야 아리스! 또 어디서 쭈그러져 있어? 진짜 내가 너 때문에 못 산다 어휴!"'
+        },
+        '51E': { 
+            name: '아리스 벨른', dept: '🔥 솔라리스', info: '20살 / 1학년 / 벨른 남작가 장녀', 
+            trait: '흑발 로우 포니테일, 적안. 극도로 소심하고 덤벙대며 낯을 가리지만 마력 보유량은 규격 외인 바보 속성 소녀.', 
+            magic: '화염 계열 마법', skill: '헬하운드 소환',
+            setting: '벨른 가문의 기대를 한 몸에 받고 입학했으나, 정작 본인은 마법을 쓰는 것을 무서워한다. 강력한 마력을 제어하지 못해 실수로 폭발을 일으키는 일이 잦아 항상 하이디 뒤에 숨어 다닌다. 하지만 친해지면 누구보다 해맑고 순수한 웃음을 보여주는 아카데미의 귀염둥이.',
+            conflict: '가문의 기대를 충족시켜야 한다는 압박감과, 파괴적인 자신의 마력에 대한 본능적인 공포 사이의 충돌.',
+            quote: '"힉...! 아, 안녕... 하세요... 으으, 하이디이이! 나 어떡해 도와줘어.."'
+        },
+        '51F': { 
+            name: '엘리나 드렌', dept: '🔥 솔라리스', info: '24살 / 4학년 / 드렌 공작가 차녀', 
+            trait: '갈색 단발에 노란 눈을 가진 중성적인 매력의 초인싸 선배. 여학생들의 팬클럽까지 거느린 아카데미의 우상.', 
+            magic: '화염 계열 마법', skill: '메테오 스트라이크 (Meteor Strike)',
+            setting: '공작가 출신답게 시원시원하고 듬직한 성격을 가졌다. 후배들을 이끄는 리더십이 뛰어나며 언제나 긍정적인 에너지를 전파한다. 하지만 사실은 밤마다 일기장에 "나도 가끔은 누군가에게 어리광 부리고 싶다"고 적는 등, 남몰래 의지할 대상을 찾고 있다.',
+            conflict: '완벽한 "선배"이자 "우상"으로서의 가면을 유지해야 하는 피로감과, 평범한 소녀로서 누리고 싶은 소박한 애정 욕구.',
+            quote: '"하하하! 걱정 마, 이 선배만 믿고 따라오라고!"'
+        },
+        '51G': { 
+            name: '레이안 루엔', dept: '⚡ 템페스트', info: '23살 / 3학년 / 고아 출신', 
+            trait: '핑크빛 긴 포니테일, 금안. 나긋나긋하고 정중한 말투 뒤에 서늘한 집착을 숨기고 있는 소프트 얀데레.', 
+            magic: '번개 계열 마법', skill: '썬더필드 (Thunder Field)',
+            setting: '출신이 불분명한 고아지만 천재적인 번개 마법 실력으로 템페스트 학과의 핵심이 되었다. 소중한 사람에게는 맹목적으로 헌신하지만, 그 사람 주변의 다른 인연들을 소리 없이 정리하는 무서운 소유욕을 가졌다. 풍부한 감정 표현 뒤에는 항상 의도가 숨겨져 있다.',
+            conflict: '버림받은 기억 때문에 생긴 극심한 애정 결핍과, 그로 인해 일그러진 독점욕 사이의 아슬아슬한 줄타기.',
+            quote: '"이젠 아무 생각 말고 제 곁에서 쉬세요. 당신에게 필요한 건... 저 하나면 충분할 테니까요."'
+        },
+        '51H': { 
+            name: '리아나 펠스', dept: '⚡ 템페스트', info: '21살 / 2학년 / 몰락 후작가 영애', 
+            trait: '주황색 장발, 벽안. 엄격한 표정과 고지식한 말투를 가진 몰락 귀족의 책임감 덩어리.', 
+            magic: '번개 계열 마법', skill: '엘드리치 스톰 (Eldritch Storm)',
+            setting: '가문을 다시 일으키기 위해 피눈물 나는 노력을 하는 지독한 노력파다. 규율에 매우 엄격하며 자신에게도 타인에게도 관용이 없다. 학비를 벌기 위해 몬스터 토벌 퀘스트를 병행하느라 언제나 눈 밑에 다크서클이 져 있다.',
+            conflict: '가문의 부흥이라는 거대한 의무와, 평범한 학생으로서 꿈꾸고 싶은 소박하고 평화로운 일상 사이의 고뇌.',
+            quote: '"비록 가문은 몰락했으나, 제 긍지까지 무너지진 않았습니다."'
+        },
+        '51I': { 
+            name: '루나 아이리스', dept: '🌿 위그드라실', info: '20살 / 1학년 / 노예 출신', 
+            trait: '청발 숏컷, 녹안. 초긍정적이고 밝은 미소의 소녀. 화를 내도 다람쥐처럼 귀여워서 학과의 마스코트 같은 존재.', 
+            magic: '생명 마법', skill: '브레이브 앤팅글 (Brave Entingle)',
+            setting: '과거 불법 노예 경매장에서 카티아 교수에 의해 구출되었다. 자신의 어두운 과거를 숨기기 위해 누구보다 밝게 행동하며, 아카데미 내의 아픈 식물이나 다친 작은 동물들을 몰래 치료해 주러 다닌다.',
+            conflict: '사람의 손길이 닿으면 순간적으로 노예 시절의 트라우마가 발동하는 자신에 대한 혐오감.',
+            quote: '"에헤헤! 다, 다들 기운 내! 내가 옆에서 계속 응원해 줄게...!"'
+        },
+        '51J': { 
+            name: '에밀리 밀레스', dept: '🌿 위그드라실', info: '21살 / 2학년 / 밀레스 백작 영애', 
+            trait: '밝은 초록머리 히메컷, 초록눈, 풍만한 가슴. 평소엔 소심하나 마법 사용 시 단호하고 강압적으로 변하는 갭모에.', 
+            magic: '자연 계열 마법', skill: '새크리드리프 (Sacred Leaf)',
+            setting: '밀레스 백작가의 영애. 평소에는 감정 표현이 풍부하면서도 수줍음이 많고 말을 더듬으며 소심한 성격이지만, 화가 나거나 마법을 사용할 때는 억눌렸던 폭발적인 마력과 함께 완전히 다른 사람처럼 자신감 넘치고 강력한 강압적 어조로 돌변한다.',
+            conflict: '소심한 평소의 자신과, 파괴적이고 강압적인 전투 시의 자아 사이에서 겪는 정체성의 혼란.',
+            quote: '"으으... 왜 자꾸... 그렇게 무모하게 다치는 거야...!" / "나한테 도전하겠다고? 가소롭네!"'
+        },
+        '51K': { 
+            name: '그레이스 루아델', dept: '🌿 위그드라실', info: '23살 / 4학년 / 시골 수녀 출신', 
+            trait: '갈색 한쪽 땋은머리, 풍만한 몸매의 소유자. 모든 학생을 포용하는 자애로운 모성애의 화신.', 
+            magic: '광역 신성/대지 마법', skill: '어스퀘이크 라운드 (Earthquake Round)',
+            setting: '시골 수녀원에서 자랐으나 마녀로 몰려 쫓겨난 아픈 과거가 있다. 하지만 원망 대신 용서를 선택하고 아카데미에 들어왔다. 매일 아침 학과 학생들을 위해 따뜻한 차를 끓이며 고민 상담소를 운영한다. 외유내강형 인물로, 학생들이 위기에 처하면 누구보다 강인하게 대지를 뒤흔든다.',
+            conflict: '마녀라는 오명을 쓰고 쫓아낸 고향 사람들에 대한 무의식적인 공포와, 그럼에도 인간을 사랑해야 한다는 신념 사이의 괴리.',
+            quote: '"너무 무리하지 말고, 제가 끓인 따뜻한 차라도 한잔 마시면서 쉴까요?"'
+        },
+        '51L': { 
+            name: '엘리사 아이언워커', dept: '❄️ 윈터스코프', info: '29살 / 지도교수', 
+            trait: '은발 포니테일에 날카로운 눈매를 가진 냉미녀. 아카데미 내에서 가장 강력한 전투력을 가진 "철의 여인".', 
+            magic: '얼음 계열 마법', skill: '얼음골렘 소환',
+            setting: '공과 사가 확실한 엄격한 교수지만, 사실은 중증의 "귀여운 것 마니아"다. 혼자 있을 때는 곰인형과 대화를 나누거나 분홍색 레이스 소품을 수집하며, 이를 들키면 얼음 마법으로 입을 막아버리는 갭모에의 정점. 아카데미 최대 전력으로서 학교를 수호한다.',
+            conflict: '강인한 철의 교수로서의 사회적 위신과, 소녀 감성 가득한 자신의 진짜 취향을 숨겨야 하는 비밀 사이의 고단함.',
+            quote: '"기강이 빠졌군. 똑바로 서! ...(방금 그 학생 가방에 달린 곰인형 진짜 귀여운데..)"'
+        },
+        '51M': { 
+            name: '카리나 블랙우드', dept: '🔥 솔라리스', info: '33살 / 지도교수', 
+            trait: '흑발 긴생머리의 위엄 넘치는 여성. 학생들이 가장 무서워하는 교수 1위지만 실은 누구보다 정이 많다.', 
+            magic: '화염 계열 마법', skill: '화룡 시그네 소환',
+            setting: '나태함을 절대 용납하지 않는 스파르타식 수업으로 유명하다. 하지만 밤늦게까지 연구하는 학생에게 몰래 간식을 두고 가거나, 다친 제자에게 츤데레처럼 약을 발라주는 등 정이 넘치는 인물. 전설적인 화룡 시그네를 부리며 실전 마법의 정수를 가르친다.',
+            conflict: '엄격한 스승의 모습이 제자들을 성장시키는 유일한 길이라 믿지만, 가혹한 교육 방식에 스스로 상처받는 여린 마음.',
+            quote: '"내 수업에서 나태함은 용납하지 않는다. 무리하다 다쳤군. 연구실로 와라, 약 발라줄 테니까."'
+        },
+        '51N': { 
+            name: '카티아 타이란', dept: '🌿 위그드라실', info: '31살 / 지도교수', 
+            trait: '갈색 짧은 포니테일의 천진난만한 여성. 허당기가 가득하지만 잠재력만큼은 아카데미 최강급인 천재.', 
+            magic: '대지 계열 마법', skill: '어스셰이커 (Earthshaker)',
+            setting: '수업 자료를 잃어버리거나 강의실을 착각하는 건 일상이다. 하지만 제자가 위험에 처하면 평소의 어리숙함은 온데간데없이 대지를 뒤흔드는 압도적인 마력을 뿜어낸다. 노예 시장에서 루나를 구출한 장본인이기도 하며, 루나에게는 스승이자 어머니 같은 존재.',
+            conflict: '자신의 폭주하기 쉬운 강대한 힘에 대한 근원적인 두려움과, 교사로서 학생들을 지켜야 한다는 사명감 사이의 투쟁.',
+            quote: '"어, 어라? 수업 자료를 어디 뒀더라...? 앗, 괴물?! 얘들아 내 뒤로... 우아아, 어떡해!"'
+        }
+    };
+
+    const monsterDB = {
+        '01': { name: '가고일', desc: '마법사의 명령을 수행하기 위해 창조된 인공 마수. 평소에는 평범한 석상으로 위장하여 침입자를 방심하게 만든 뒤, 기습적으로 날아올라 날카로운 발톱으로 공격한다.' },
+        '02': { name: '고대 가고일', desc: '중심부, 최하층을 지키는 가고일의 상위 개체. 잊혀진 고대 마법으로 축조되어 일반 가고일들을 통솔하며, 강력한 석화 저주를 품고 있다.' },
+        '03': { name: '데미 가고일', desc: '오랜 시간 석상 형태로 존재하다가 부식으로 인해 날개가 부서진 형태. 비행 능력은 잃었지만 단단한 돌의 신체로 밀어붙이는 둔탁한 공격은 여전히 위협적이다.' },
+        '04': { name: '니들울프', desc: '등에 가시가 나 있는 검은 숲에만 보이는 개체. 엄청난 민첩성을 지녔으며 철저하게 떼를 지어 사냥감을 궁지로 몬다.' },
+        '05': { name: '변종 니들울프', desc: '니들울프 무리의 리더격인 존재. 치열한 생존 경쟁에서 살아남아 거대해졌으며, 함정을 파거나 다른 마수들을 교란시키는 악랄한 전술을 구사한다.' },
+        '06': { name: '락 골렘', desc: '구시대 마법의 산물로 미궁을 지키는 존재. 오직 압도적인 물리력으로 침입자를 짓눌러버리는 바위 덩어리.' },
+        '07': { name: '마력 골렘', desc: '미궁의 중심부를 지키는 락 골렘보다 더 거대한 존재. 단순한 물리 타격을 넘어 마력 폭발을 일으키며 방어한다.' },
+        '08': { name: '리빙아머', desc: '도서관과 묘지의 짙은 마력으로 돌아다니는 파수꾼 같은 존재. 허가받지 않은 침입자를 무자비하게 배제한다.' },
+        '09': { name: '리빙 헬름', desc: '오랜 시간 마력에 노출되어 리빙아머보다 강화된 존재. 갑옷과 투구만 있는 모습으로 부유하며, 마력 탄환보다는 강력한 근접전을 선호한다.' },
+        '10': { name: '만티코어', desc: '마법 저항이 매우 강해 마법사들이 까다로워하는 상대. 흉악한 생김새만큼이나 악랄한 공격성을 지녔다.' },
+        '11': { name: '숲 머쉬룸', desc: '자연 서식하는 온순한 개체지만, 마력에 과노출 시 변이하므로 주의가 필요하다. 위협을 느끼면 폭발적인 마력 포자를 뿜어낸다.' },
+        '12': { name: '블러드 불', desc: '미노타우로스의 상위 개체. 피의 맛을 보고 광기에 사로잡혔으며, 접근하는 모든 것을 도살하는 미궁의 붉은 사신이다.' },
+        '13': { name: '미노타우로스', desc: '미궁에 서식하는 인간 외형에 황소 머리를 한 괴물. 거대한 도끼를 휘두르며 공간을 울리는 끔찍한 포효를 내지른다.' },
+        '14': { name: '바실리스크', desc: '치명적인 맹독을 내뿜는 거대한 뱀. 그 독니에 스치기만 해도 살이 타들어가며, 주로 습하고 마력이 고인 구역에 똬리를 틀고 있다.' },
+        '15': { name: '변종 바실리스크', desc: '바실리스크가 오랜 탈피를 통해 도달하는 존재. 강철보다 단단한 비늘을 지녔으며, 녀석이 내뿜는 독기는 호흡하는 것만으로도 폐를 굳게 만든다.' },
+        '16': { name: '드레드 사우리안', desc: '공식적으로 보고된 적 없는 개체. 바실리스크의 조상이라는 설이 존재하며, 조우한 자는 단 한 명도 살아 돌아오지 못했다고 전해진다.' },
+        '17': { name: '스폰', desc: '연구실에서 탄생된 실패된 실험체. 시각은 퇴화했지만 상대의 마력을 냄새로 감지하며 불안정한 마력탄을 쏜다.' },
+        '18': { name: '포울스폰', desc: '(연구실 출현) 스폰보다 몸이 더 커지고 훨씬 흉폭한 개체. 압도적인 질량과 흉폭성으로 눈앞의 모든 것을 파괴한다.' },
+        '19': { name: '슬라임', desc: '환경에 쉽게 적응하며 어디서나 보이는 개체. 물리 공격에 대한 강한 둔화 내성을 지니고 있어 초보 마도사들이 애먹는 상대.' },
+        '20': { name: '병졸 거미', desc: '퀸의 명령을 듣는 거미 군체. 퀸의 텔레파시에 철저히 복종하여 일사불란하게 사냥하며, 퀸 사망 시 본능적으로 행동한다.' },
+        '21': { name: '스파이더 퀸', desc: '병졸 거미를 통솔하는 존재. 주위에 접근하는 생명체를 모두 잡아먹으며, 강력한 마력 거미줄로 상대를 결박한다.' },
+        '22': { name: '케르베로스', desc: '지옥의 입구를 지킨다고 알려진 머리가 셋 달린 거대한 마수. 각 머리는 독립적인 자아를 지니며, 침입자를 발견하면 결코 놓치지 않는 지독한 추격 능력을 자랑한다.' },
+        '23': { name: '락엠페러', desc: '안개 호수 중앙부 섬에 사는 거대한 생명체. 일반 골렘과 달리 지능이 뛰어나며 대지의 마력을 사용하여 침입자를 철저히 배제한다. 매우 경계적.' },
+        '24': { name: '흑룡 카라트', desc: '루어스 아카데미의 가장 깊은 기밀 문서에만 이름이 언급되는 파멸의 화신. 현재까지 공식적으로 보고된 적 없음.' },
+        '25': { name: '코카트리스', desc: '2쌍의 날개를 가진 검은 숲의 지배자. 니들울프를 먹이로 삼으며 매우 호전적이다. 녀석의 눈과 마주친 자는 서서히 돌로 굳어버린다.' },
+        '26': { name: '뇌룡 파토스', desc: '마나 균열 지역의 초고압 마력을 먹고 자라는 환상적인 용. 번개 그 자체로 이루어진 육체를 가졌으며, 녀석의 포효는 주위의 모든 마법 캐스팅을 무효화시키는 전격 폭풍을 일으킨다.' }
+    };
+
+    const placesDB = [
+        { id: '27', name: '아카데미 복도', desc: '고풍스러운 대리석 바닥과 마력 샹들리에로 장식된 화려한 복도.', monsters: [] },
+        { id: '28', name: '기숙사 방', desc: '4개 학과의 특성에 맞게 마법으로 자동 조절되는 최고급 학생 숙소.', monsters: [] },
+        { id: '29', name: '학교 식당', desc: '환상종 뼈 육수와 마력 허브로 영양가 높은 식사를 제공하는 식당.', monsters: [] },
+        { id: '30', name: '강의실', desc: '계단식 구조. 칠판 대신 허공에 마력으로 글씨를 띄우는 학구적인 공간.', monsters: [] },
+        { id: '31', name: '학생회실', desc: '최상위 엘리트 귀족과 실력자들만이 출입하는 권력의 중심지.', monsters: [] },
+        { id: '32', name: '야외훈련장 및 투기장', desc: '마법 폭발음과 피 튀기는 공식 결투가 끊이지 않는 공터.', monsters: [] },
+        { id: '34', name: '폐쇄된 도서관', desc: '자아를 가진 마도서들과 저주받은 금서들이 쇠사슬에 묶인 금지 구역.', monsters: ['08', '17', '09'] },
+        { id: '35', name: '금지된 연구실', desc: '과거 연금술 사고로 폐쇄된 지하 시설. 정체불명의 가스가 새어나옴.', monsters: ['19', '17'] },
+        { id: '36', name: '방치된 온실', desc: '마력에 오염된 식물들이 지배하는 구역.', monsters: ['11'] },
+        { id: '37', name: '지하 묘지', desc: '초대 설립자들의 영면 장소이자 언데드의 소굴.', monsters: ['03', '01', '02'] },
+        { id: '38', name: '검은 숲', desc: '햇빛이 들지 않는 마수들의 영역.', monsters: ['04', '05', '25'] },
+        { id: '39', name: '안개 호수', desc: '스산한 호수. 수룡의 전설이 깃든 곳.', monsters: ['14', '19', '11', '23'] },
+        { id: '40', name: '거미 동굴', desc: '스파이더 퀸의 거대 둥지.', monsters: ['20', '21'] },
+        { id: '45', name: '지하 수로', desc: '아카데미 지하 깊숙이 흐르는 어둡고 축축한 수로. 맹독성 마수들과 파충류 몬스터들이 서식합니다.', monsters: ['14', '15', '16'] },
+        { id: '42', name: '고대 미궁', desc: '공간이 뒤틀리는 마법 미로.', monsters: ['06', '13', '07', '12'] },
+        { id: '43', name: '바위 협곡', desc: '날카로운 바위 험지.', monsters: ['10'] },
+        { id: '44', name: '차원 균열 지역', desc: '이계의 혼돈이 쏟아지는 최전방.', monsters: ['22', '26', '24'] }
+    ];
+
+    window.onload = function() {
+        const pContainer = document.getElementById('places-list-container');
+        let pHtml = '';
+        placesDB.forEach(place => {
+            let monsterHtml = '';
+            if (place.monsters.length > 0) {
+                let mTags = place.monsters.map(mCode => {
+                    let mName = monsterDB[mCode].name;
+                    let mImg = `https://konz1.uk/51P/${mCode}.png`;
+                    return `<div class="m-tag" onclick="openMonsterModal('${mCode}')"><img src="${mImg}" onerror="this.src='https://via.placeholder.com/40?text=?'"><span>${mName}</span></div>`;
+                }).join('');
+                monsterHtml = `<div class="monster-box"><h4>⚠️ RECORDED ENTITIES</h4><div class="m-tag-grid">${mTags}</div></div>`;
+            }
+            pHtml += `
+                <div class="place-card">
+                    <div class="place-header">
+                        <img src="https://konz1.uk/51P/${place.id}.png" class="place-img" onerror="this.src='https://via.placeholder.com/180?text=Place'">
+                        <div class="place-text">
+                            <h3>${place.name}</h3>
+                            <p>${place.desc}</p>
+                        </div>
+                    </div>
+                    ${monsterHtml}
+                </div>
+            `;
+        });
+        pContainer.innerHTML = pHtml;
+    };
+
+    function switchView(viewId) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        if(viewId === 'home') document.querySelector('.nav-btn').classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showDepartment(dept) {
+        const grid = document.getElementById('char-list-grid');
+        grid.innerHTML = '';
+        for(let code in charDB) {
+            if(charDB[code].dept.includes(dept)) {
+                let char = charDB[code];
+                grid.innerHTML += `
+                    <div class="char-item" onclick="openCharModal('${code}')">
+                        <img src="https://konz1.uk/${code}/01.png" onerror="this.src='https://via.placeholder.com/160x200?text=?'">
+                        <div class="char-info-short">
+                            <h4 style="font-family: 'Cinzel', 'Gowun Dodum', sans-serif;">${char.name}</h4>
+                            <p>${char.info}</p>
+                            <p style="margin-top:5px; font-size:0.8rem; color:var(--accent-gold);">${char.trait}</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        document.getElementById('dept-title').innerText = `BLOCK REPORT : ${dept}`;
+        
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.getElementById('dept-view').classList.add('active');
+        
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 모달 애니메이션 적용 함수
+    function openCharModal(code) {
+        const char = charDB[code];
+        const content = document.getElementById('dossier-content');
+        
+        let galleryHtml = `<div class="gallery-grid" style="margin-top: 15px;">`;
+        ['01','02','03','04','05','06','07','08','09','10','11','12'].forEach(sit => {
+            galleryHtml += `<div class="gallery-item" onclick="openImgLightbox('https://konz1.uk/${code}/${sit}.png')"><img src="https://konz1.uk/${code}/${sit}.png" onerror="this.parentElement.style.display='none'"></div>`;
+        });
+        galleryHtml += `</div>`;
+
+        content.innerHTML = `
+            <div class="merged-layout">
+                <div class="hero-photo" onclick="openImgLightbox('https://konz1.uk/${code}/01.png')">
+                    <img src="https://konz1.uk/${code}/01.png" onerror="this.src='https://via.placeholder.com/800x400?text=NO+IMAGE'">
+                </div>
+                <div class="merged-info">
+                    <h2 style="font-size: 2.8rem; color: var(--accent-gold); border-bottom: var(--border-light); margin-bottom: 20px; font-family: 'Cinzel', 'Gowun Dodum', sans-serif;">${char.name}</h2>
+                    
+                    <table class="badge-table">
+                        <tr><th>DEPARTMENT</th><td>${char.dept}</td></tr>
+                        <tr><th>STATUS</th><td>${char.info}</td></tr>
+                        <tr><th>TRAITS</th><td>${char.trait}</td></tr>
+                    </table>
+                    
+                    <div class="quote-box" style="margin-bottom: 30px;">${char.quote}</div>
+
+                    <div class="report-section">
+                        <h3 style="font-family: 'Cinzel', 'Gowun Dodum', sans-serif;">ACADEMY RECORD</h3>
+                        <p>${char.setting}</p>
+                    </div>
+                    <div class="report-section">
+                        <h3 style="color:var(--accent-gold); font-family: 'Cinzel', 'Gowun Dodum', sans-serif;">COMBAT & MAGIC</h3>
+                        <p><strong>Primary Magic:</strong> ${char.magic}<br><strong>Signature Skill:</strong> ${char.skill}</p>
+                    </div>
+                    <div class="report-section">
+                        <h3 style="color:var(--accent-red); font-family: 'Cinzel', 'Gowun Dodum', sans-serif;">PSYCHOLOGICAL PROFILE</h3>
+                        <p>${char.conflict}</p>
+                    </div>
+
+                    <div class="report-section" style="border-top: 1px dashed var(--accent-gold); padding-top: 20px; margin-top: 30px;">
+                        <h3 style="color:var(--text-light); text-align:center; font-family: 'Cinzel', 'Gowun Dodum', sans-serif;">GALLERY</h3>
+                        ${galleryHtml}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        const modal = document.getElementById('charModal');
+        modal.style.display = 'flex';
+        // 애니메이션 효과를 위해 브라우저 리페인트 후 클래스 추가
+        setTimeout(() => modal.classList.add('show'), 10);
+    }
+
+    function openMonsterModal(code) {
+        const m = monsterDB[code];
+        const content = document.getElementById('monster-content');
+        content.innerHTML = `
+            <div class="monster-badge-layout">
+                <div class="monster-badge-photo"><img src="https://konz1.uk/51P/${code}.png" onerror="this.src='https://via.placeholder.com/300x300?text=NO+IMAGE'"></div>
+                <div class="monster-badge-info">
+                    <h2 style="color:var(--accent-red); font-family: 'Cinzel', 'Gowun Dodum', sans-serif; font-size: 2.5rem; border-bottom: var(--border-light); margin-bottom: 20px;">${m.name}</h2>
+                    <p style="font-size:1.15rem; color: var(--text-ink); line-height:1.8;">${m.desc}</p>
+                </div>
+            </div>
+        `;
+        
+        const modal = document.getElementById('monsterModal');
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('show'), 10);
+    }
+
+    function openImgLightbox(src) {
+        document.getElementById('lb-img').src = src;
+        const lightbox = document.getElementById('img-lightbox');
+        lightbox.style.display = 'flex';
+        setTimeout(() => lightbox.classList.add('show'), 10);
+    }
+
+    // 모달 닫기 애니메이션 처리 함수
+    function closeModal(modalId, event) {
+        // 배경을 클릭하거나 닫기 버튼을 클릭했을 때만 닫히도록 처리
+        if (event && event.target !== document.getElementById(modalId)) return;
+        
+        const modal = document.getElementById(modalId);
+        modal.classList.remove('show');
+        // 애니메이션(0.3s)이 끝난 후 display: none 처리
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
+    }
+
+    function closeLightbox(event) {
+        if (event && event.target !== document.getElementById('img-lightbox')) return;
+        const lightbox = document.getElementById('img-lightbox');
+        lightbox.classList.remove('show');
+        setTimeout(() => {
+            lightbox.style.display = 'none';
+        }, 300);
+    }
+</script>
+
+</body>
+</html>
